@@ -143,16 +143,17 @@ resource "azurerm_virtual_machine" "test" {
    environment = "staging"
  }
 
-   provisioner "local-exec" {
-    command = "echo $FOO $BAR $BAZ >> env_vars.txt"
 
-    environment = {
-      FOO = "bar"
-      BAR = 1
-      BAZ = "true"
-    }
+ provisioner "file" {
+    source      = "script.sh"
+    destination = "/tmp/script.sh"
   }
 
-
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/script.sh",
+      "/tmp/script.sh args",
+    ]
+  }
 }
 
