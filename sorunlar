@@ -1,0 +1,5 @@
+provisioner "local-exec"'de
+
+command değişikliğini 
+
+terraform plan algılamadı
