@@ -2,7 +2,9 @@ variable subscription_id {}
 variable tenant_id {}
 variable client_id {}
 variable client_secret {}
-variable vm_count {}
+variable vm_count {
+       default = 3
+}
 
 provider "azurerm" {
    subscription_id = "${var.subscription_id}"

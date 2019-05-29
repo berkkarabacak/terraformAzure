@@ -1,17 +1,17 @@
 resource "azurerm_resource_group" "test" {
- name     = "acctestrg"
+ name     = "accenturerg"
  location = "West US 2"
 }
 
 resource "azurerm_virtual_network" "test" {
- name                = "acctvn"
+ name                = "accenturevn"
  address_space       = ["10.0.0.0/16"]
  location            = "${azurerm_resource_group.test.location}"
  resource_group_name = "${azurerm_resource_group.test.name}"
 }
 
 resource "azurerm_subnet" "test" {
- name                 = "acctsub"
+ name                 = "accenturesub"
  resource_group_name  = "${azurerm_resource_group.test.name}"
  virtual_network_name = "${azurerm_virtual_network.test.name}"
  address_prefix       = "10.0.2.0/24"
@@ -25,8 +25,8 @@ resource "azurerm_public_ip" "test" {
 }
 
 resource "azurerm_public_ip" "vm" {
- count                        = 2
- name                         = "acctni${count.index}"
+ count                        = "${var.vm_count}"
+ name                         = "accentureni${count.index}"
  location                     = "${azurerm_resource_group.test.location}"
  resource_group_name          = "${azurerm_resource_group.test.name}"
  public_ip_address_allocation = "static"
@@ -50,8 +50,8 @@ resource "azurerm_lb_backend_address_pool" "test" {
 }
 
 resource "azurerm_network_interface" "test" {
- count               = 2
- name                = "acctni${count.index}"
+ count               = "${var.vm_count}"
+ name                = "accentureni${count.index}"
  location            = "${azurerm_resource_group.test.location}"
  resource_group_name = "${azurerm_resource_group.test.name}"
 
@@ -65,7 +65,7 @@ resource "azurerm_network_interface" "test" {
 }
 
 resource "azurerm_managed_disk" "test" {
- count                = 2
+ count                = "${var.vm_count}"
  name                 = "datadisk_existing_${count.index}"
  location             = "${azurerm_resource_group.test.location}"
  resource_group_name  = "${azurerm_resource_group.test.name}"
@@ -78,14 +78,14 @@ resource "azurerm_availability_set" "avset" {
  name                         = "avset"
  location                     = "${azurerm_resource_group.test.location}"
  resource_group_name          = "${azurerm_resource_group.test.name}"
- platform_fault_domain_count  = 2
- platform_update_domain_count = 2
+ platform_fault_domain_count  = "${var.vm_count}"
+ platform_update_domain_count = "${var.vm_count}"
  managed                      = true
 }
 
 resource "azurerm_virtual_machine" "test" {
- count                 = 2
- name                  = "acctvm${count.index}"
+ count                 = "${var.vm_count}"
+ name                  = "accenturevm${count.index}"
  location              = "${azurerm_resource_group.test.location}"
  availability_set_id   = "${azurerm_availability_set.avset.id}"
  resource_group_name   = "${azurerm_resource_group.test.name}"
