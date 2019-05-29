@@ -5,6 +5,12 @@ variable client_secret {}
 variable vm_count {
        default = 3
 }
+variable "admin_username" {
+    default = "berk"
+}
+variable "admin_password" {
+    default = "Berk123123123"
+}
 
 provider "azurerm" {
    subscription_id = "${var.subscription_id}"
