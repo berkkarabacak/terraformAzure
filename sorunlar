@@ -1,5 +1,5 @@
-provisioner "local-exec"'de
+provisioner "local-exec"'de command değişikliğini terraform plan algılamadı
 
-command değişikliğini 
+Disk datadisk_existing_3 is attached to VM /subscriptions/4d048e66-d095-4bce-ba91-64ad63809962/resourceGroups/acctestrg/providers/Microsoft.Compute/virtualMachines/acctvm3. (Code: OperationNotAllowed)
 
-terraform plan algılamadı
+terraform.tfvars içine vmcount yazınca patladı çünkü lazy çalışıo
