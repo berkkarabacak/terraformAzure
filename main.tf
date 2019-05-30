@@ -92,7 +92,7 @@ resource "azurerm_managed_disk" "test" {
 
 resource "azurerm_virtual_machine" "test" {
  count                 = "${var.redundancy_count}"
- name                  = "berkkaravm${count.index}"
+ name                  = "${var.prefix}vm${count.index}"
  location              = "${azurerm_resource_group.test.location}"
 #  availability_set_id   = "${azurerm_availability_set.avset.id}"
  resource_group_name   = "${azurerm_resource_group.test.name}"
@@ -113,28 +113,28 @@ resource "azurerm_virtual_machine" "test" {
  }
 
  storage_os_disk {
-   name              = "myosdisk${count.index}"
+   name              = "osdisk${count.index}"
    caching           = "ReadWrite"
    create_option     = "FromImage"
    managed_disk_type = "Standard_LRS"
  }
 
  # Optional data disks
- storage_data_disk {
-   name              = "datadisk_new_${count.index}"
-   managed_disk_type = "Standard_LRS"
-   create_option     = "Empty"
-   lun               = 0
-   disk_size_gb      = "1023"
- }
+#  storage_data_disk {
+#    name              = "datadisk_new_${count.index}"
+#    managed_disk_type = "Standard_LRS"
+#    create_option     = "Empty"
+#    lun               = 0
+#    disk_size_gb      = "1023"
+#  }
 
- storage_data_disk {
-   name            = "${element(azurerm_managed_disk.test.*.name, count.index)}"
-   managed_disk_id = "${element(azurerm_managed_disk.test.*.id, count.index)}"
-   create_option   = "Attach"
-   lun             = 1
-   disk_size_gb    = "${element(azurerm_managed_disk.test.*.disk_size_gb, count.index)}"
- }
+#  storage_data_disk {
+#    name            = "${element(azurerm_managed_disk.test.*.name, count.index)}"
+#    managed_disk_id = "${element(azurerm_managed_disk.test.*.id, count.index)}"
+#    create_option   = "Attach"
+#    lun             = 1
+#    disk_size_gb    = "${element(azurerm_managed_disk.test.*.disk_size_gb, count.index)}"
+#  }
 
  os_profile {
    computer_name  = "hostname"
@@ -180,7 +180,7 @@ resource "null_resource" "assets" {
       provisioner "remote-exec" {
         inline = [
           "chmod +x /home/berk/script.sh",
-          "/home/berk/script.sh args",
+          "/home/berk/script.sh"
         ]
       }
 }
@@ -208,7 +208,7 @@ resource "null_resource" "quote" {
     provisioner "remote-exec" {
       inline = [
         "chmod +x /home/berk/script.sh",
-        "/home/berk/script.sh args",
+        "/home/berk/script.sh"
       ]
     }
 }
@@ -238,7 +238,7 @@ resource "null_resource" "Newsfeed" {
     provisioner "remote-exec" {
       inline = [
         "chmod +x /home/berk/script.sh",
-        "/home/berk/script.sh args",
+        "/home/berk/script.sh"
       ]
     }
 }
@@ -267,7 +267,7 @@ resource "null_resource" "frontend" {
     provisioner "remote-exec" {
       inline = [
         "chmod +x /home/berk/script.sh",
-        "/home/berk/script.sh args",
+        "/home/berk/script.sh ${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,0)} ${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,1)} ${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
       ]
     }
 }
