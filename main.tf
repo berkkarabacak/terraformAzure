@@ -157,7 +157,7 @@ data "azurerm_public_ip" "ipforbackendvm" {
   resource_group_name = "${element(azurerm_virtual_machine.test.*.resource_group_name, count.index)}"
 }
 
-resource "null_resource" "vm0" {
+resource "null_resource" "assets" {
   # Changes to any instance of the vms requires re-provisioning
   triggers = {
     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,0)}"
@@ -172,23 +172,20 @@ resource "null_resource" "vm0" {
       password = "${var.admin_password}"
       }
 
-  provisioner "remote-exec" {
-    inline = [
-      "whoami >> berk00.txt",
-      "git clone https://github.com/berkkarabacak/microservicedemo.git",
-      "cd microservicedemo",
-      "sudo apt-get install leiningen -y",
-      "sudo apt-get install build-essential -y",
-      "make libs",
-      "make clean all",
-      "sudo apt-get update",
-      "sudo apt-get install docker.io -y",
-      "sudo docker run -d --rm --name web-test -p 80:8000 crccheck/hello-world"
-    ]
-  }
+    provisioner "file" {
+        source      = "assets_script.sh"
+        destination = "home/berk/script.sh"
+      }
+
+      provisioner "remote-exec" {
+        inline = [
+          "chmod +x /home/berk/script.sh",
+          "/home/berk/script.sh args",
+        ]
+      }
 }
 
-resource "null_resource" "vm1" {
+resource "null_resource" "quote" {
   # Changes to any instance of the vms requires re-provisioning
   triggers = {
     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,1)}"
@@ -203,22 +200,77 @@ resource "null_resource" "vm1" {
       password = "${var.admin_password}"
       }
 
-  provisioner "remote-exec" {
-    inline = [
-      "whoami >> berko111.txt",
-      "git clone https://github.com/berkkarabacak/microservicedemo.git",
-      "cd microservicedemo",
-      "sudo apt-get install leiningen -y",
-      "sudo apt-get install build-essential -y",
-      "make libs",
-      "make clean all",
-      "sudo apt-get update",
-      "sudo apt-get install docker.io -y",
-      "sudo docker run -d --rm --name web-test -p 80:8000 crccheck/hello-world"
-    ]
-  }
+    provisioner "file" {
+      source      = "quotescript.sh"
+      destination = "home/berk/script.sh"
+    }
+
+    provisioner "remote-exec" {
+      inline = [
+        "chmod +x /home/berk/script.sh",
+        "/home/berk/script.sh args",
+      ]
+    }
 }
 
+
+resource "null_resource" "Newsfeed" {
+  # Changes to any instance of the vms requires re-provisioning
+  triggers = {
+    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,2)}"
+  }
+
+  # Bootstrap script can run on any instance of the cluster
+  # So we just choose the first in this case
+  connection {
+      type     = "ssh"
+      host     = "${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
+      user     = "${var.admin_username}"
+      password = "${var.admin_password}"
+      }
+
+  
+    provisioner "file" {
+      source      = "newsfeed.sh"
+      destination = "home/berk/script.sh"
+    }
+
+    provisioner "remote-exec" {
+      inline = [
+        "chmod +x /home/berk/script.sh",
+        "/home/berk/script.sh args",
+      ]
+    }
+}
+
+
+resource "null_resource" "frontend" {
+  # Changes to any instance of the vms requires re-provisioning
+  triggers = {
+    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,3)}"
+  }
+
+  # Bootstrap script can run on any instance of the cluster
+  # So we just choose the first in this case
+  connection {
+      type     = "ssh"
+      host     = "${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,3)}"
+      user     = "${var.admin_username}"
+      password = "${var.admin_password}"
+      }
+    
+    provisioner "file" {
+      source      = "frontendscript.sh"
+      destination = "home/berk/script.sh"
+    }
+
+    provisioner "remote-exec" {
+      inline = [
+        "chmod +x /home/berk/script.sh",
+        "/home/berk/script.sh args",
+      ]
+    }
+}
 output "public_ip_addresses" {
   value = "${join("-", data.azurerm_public_ip.ipforbackendvm.*.ip_address)}"
 }

@@ -4,11 +4,11 @@ variable "admin_username" {
 }
 
 variable "redundancy_count" {
-  default = 3
+  default = 4
 }
 
 variable "prefix" {
-  default = "berko"
+  default = "berk"
 }
 
 variable "admin_password" {
