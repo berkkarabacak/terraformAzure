@@ -149,6 +149,27 @@ resource "azurerm_virtual_machine" "test" {
  tags = {
    environment = "staging"
  }
+
+  connection {
+      type     = "ssh"
+      host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,count.index)}"
+      user     = "${var.admin_username}"
+      password = "${var.admin_password}"
+      }
+
+    provisioner "file" {
+      #file ekleyince patlıo.
+        source      = "assets_script.sh"
+        destination = "/home/berk/script.sh"
+      }
+
+      provisioner "remote-exec" {
+        inline = [
+          "chmod +x /home/berk/script.sh",
+          "/home/berk/script.sh"
+        ]
+      }
+
 }
 
 # resource "null_resource" "assets" {
