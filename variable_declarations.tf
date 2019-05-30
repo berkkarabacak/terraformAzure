@@ -1,17 +1,14 @@
-variable "subscription_id" {
-}
-
-variable "tenant_id" {
-}
-
-variable "client_id" {
-}
-
-variable "client_secret" {
-}
 
 variable "admin_username" {
   default = "berk"
+}
+
+variable "redundancy_count" {
+  default = 3
+}
+
+variable "prefix" {
+  default = "berko"
 }
 
 variable "admin_password" {
@@ -20,9 +17,9 @@ variable "admin_password" {
 
 provider "azurerm" {
   version = "=1.29.0"
-  subscription_id = var.subscription_id
-  tenant_id       = var.tenant_id
-  client_id       = var.client_id
-  client_secret   = var.client_secret
+  subscription_id = "4d048e66-d095-4bce-ba91-64ad63809962"
+  tenant_id = "b67d722d-aa8a-4777-a169-ebeb7a6a3b67"
+  client_id = "c8a0e08f-9abe-44c6-bb81-e393694df3f9"
+  client_secret = "df0e83f3-284a-4126-b719-01765bd0ebd5"
 }
 

@@ -3,3 +3,13 @@ provisioner "local-exec"'de command değişikliğini terraform plan algılamadı
 Disk datadisk_existing_3 is attached to VM /subscriptions/4d048e66-d095-4bce-ba91-64ad63809962/resourceGroups/acctestrg/providers/Microsoft.Compute/virtualMachines/acctvm3. (Code: OperationNotAllowed)
 
 terraform.tfvars içine vmcount yazınca patladı çünkü lazy çalışıo
+
+
+https://github.com/terraform-providers/terraform-provider-azurerm/issues/951
+
+One Azure specific thing to bear in mind is that Dynamic IP Addresses aren't assigned until the VM is booted - as such you may need to use a Data Source to obtain that value once the VM is booted (e.g. the azurerm_public_ip Data Source, with a relevant example here) - and then call the Provisioner from a separate block (e.g. a null_resource) like below:
+
+ssh port yüzünden 2 gün gitti.
+
+
+null resource yapınca remote execde değişikleri farkedio, komple destroya gerek kalmıyor
