@@ -24,7 +24,7 @@ resource "azurerm_subnet" "test" {
 #  allocation_method            = "Static"
 # }
 
-resource "azurerm_public_ip" "ipforbackendvm_resource" {
+resource "azurerm_public_ip" "ipforbackendvm" {
  count                        = "${var.redundancy_count}"
  name                         = "ipforbackendvm_${count.index}"
  location                     = "${azurerm_resource_group.test.location}"
@@ -59,7 +59,7 @@ resource "azurerm_network_interface" "test" {
    name                          = "testConfiguration${count.index}"
    subnet_id                     = "${azurerm_subnet.test.id}"
    private_ip_address_allocation = "dynamic"
-   public_ip_address_id           = "${element(azurerm_public_ip.ipforbackendvm_resource.*.id, count.index)}"
+   public_ip_address_id           = "${element(azurerm_public_ip.ipforbackendvm.*.id, count.index)}"
   #  load_balancer_backend_address_pools_ids = ["${azurerm_lb_backend_address_pool.test.id}"]
  }
 }
@@ -151,126 +151,129 @@ resource "azurerm_virtual_machine" "test" {
  }
 }
 
-data "azurerm_public_ip" "ipforbackendvm" {
-  count               = "${var.redundancy_count}"
-  name                = "${element(azurerm_public_ip.ipforbackendvm_resource.*.name, count.index)}"
-  resource_group_name = "${element(azurerm_virtual_machine.test.*.resource_group_name, count.index)}"
-}
+# resource "null_resource" "assets" {
+  
+#   depends_on = ["azurerm_virtual_machine.test"  ]
 
-resource "null_resource" "assets" {
-  # Changes to any instance of the vms requires re-provisioning
-  triggers = {
-    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,0)}"
-  }
+#   # Changes to any instance of the vms requires re-provisioning
+#   triggers = {
+#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,0)}"
+#   }
 
-  # Bootstrap script can run on any instance of the cluster
-  # So we just choose the first in this case
-  connection {
-      type     = "ssh"
-      host     = "${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,0)}"
-      user     = "${var.admin_username}"
-      password = "${var.admin_password}"
-      }
+#   # Bootstrap script can run on any instance of the cluster
+#   # So we just choose the first in this case
+#   connection {
+#       type     = "ssh"
+#       host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,0)}"
+#       user     = "${var.admin_username}"
+#       password = "${var.admin_password}"
+#       }
 
-    provisioner "file" {
-        source      = "assets_script.sh"
-        destination = "home/berk/script.sh"
-      }
+#     provisioner "file" {
+#         source      = "assets_script.sh"
+#         destination = "/home/berk/script.sh"
+#       }
 
-      provisioner "remote-exec" {
-        inline = [
-          "chmod +x /home/berk/script.sh",
-          "/home/berk/script.sh"
-        ]
-      }
-}
+#       provisioner "remote-exec" {
+#         inline = [
+#           "chmod +x /home/berk/script.sh",
+#           "/home/berk/script.sh"
+#         ]
+#       }
+# }
 
-resource "null_resource" "quote" {
-  # Changes to any instance of the vms requires re-provisioning
-  triggers = {
-    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,1)}"
-  }
+# resource "null_resource" "quote" {
+#     depends_on = ["azurerm_virtual_machine.test"  ]
 
-  # Bootstrap script can run on any instance of the cluster
-  # So we just choose the first in this case
-  connection {
-      type     = "ssh"
-      host     = "${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,1)}"
-      user     = "${var.admin_username}"
-      password = "${var.admin_password}"
-      }
+#   # Changes to any instance of the vms requires re-provisioning
+#   triggers = {
+#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,1)}"
+#   }
 
-    provisioner "file" {
-      source      = "quotescript.sh"
-      destination = "home/berk/script.sh"
-    }
+#   # Bootstrap script can run on any instance of the cluster
+#   # So we just choose the first in this case
+#   connection {
+#       type     = "ssh"
+#       host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,1)}"
+#       user     = "${var.admin_username}"
+#       password = "${var.admin_password}"
+#       }
 
-    provisioner "remote-exec" {
-      inline = [
-        "chmod +x /home/berk/script.sh",
-        "/home/berk/script.sh"
-      ]
-    }
-}
+#     provisioner "file" {
+#       source      = "quotescript.sh"
+#       destination = "/home/berk/script.sh"
+#     }
+
+#     provisioner "remote-exec" {
+#       inline = [
+#         "chmod +x /home/berk/script.sh",
+#         "/home/berk/script.sh"
+#       ]
+#     }
+# }
 
 
-resource "null_resource" "Newsfeed" {
-  # Changes to any instance of the vms requires re-provisioning
-  triggers = {
-    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,2)}"
-  }
+# resource "null_resource" "Newsfeed" {
+#     depends_on = ["azurerm_virtual_machine.test"  ]
 
-  # Bootstrap script can run on any instance of the cluster
-  # So we just choose the first in this case
-  connection {
-      type     = "ssh"
-      host     = "${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
-      user     = "${var.admin_username}"
-      password = "${var.admin_password}"
-      }
+#   # Changes to any instance of the vms requires re-provisioning
+#   triggers = {
+#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,2)}"
+#   }
+
+#   # Bootstrap script can run on any instance of the cluster
+#   # So we just choose the first in this case
+#   connection {
+#       type     = "ssh"
+#       host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
+#       user     = "${var.admin_username}"
+#       password = "${var.admin_password}"
+#       }
 
   
-    provisioner "file" {
-      source      = "newsfeed.sh"
-      destination = "home/berk/script.sh"
-    }
+#     provisioner "file" {
+#       source      = "newsfeed.sh"
+#       destination = "/home/berk/script.sh"
+#     }
 
-    provisioner "remote-exec" {
-      inline = [
-        "chmod +x /home/berk/script.sh",
-        "/home/berk/script.sh"
-      ]
-    }
-}
+#     provisioner "remote-exec" {
+#       inline = [
+#         "chmod +x /home/berk/script.sh",
+#         "/home/berk/script.sh"
+#       ]
+#     }
+# }
 
 
-resource "null_resource" "frontend" {
-  # Changes to any instance of the vms requires re-provisioning
-  triggers = {
-    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,3)}"
-  }
+# resource "null_resource" "frontend" {
+#     depends_on = ["azurerm_virtual_machine.test"  ]
 
-  # Bootstrap script can run on any instance of the cluster
-  # So we just choose the first in this case
-  connection {
-      type     = "ssh"
-      host     = "${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,3)}"
-      user     = "${var.admin_username}"
-      password = "${var.admin_password}"
-      }
+#   # Changes to any instance of the vms requires re-provisioning
+#   triggers = {
+#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,3)}"
+#   }
+
+#   # Bootstrap script can run on any instance of the cluster
+#   # So we just choose the first in this case
+#   connection {
+#       type     = "ssh"
+#       host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,3)}"
+#       user     = "${var.admin_username}"
+#       password = "${var.admin_password}"
+#       }
     
-    provisioner "file" {
-      source      = "frontendscript.sh"
-      destination = "home/berk/script.sh"
-    }
+#     provisioner "file" {
+#       source      = "frontendscript.sh"
+#       destination = "/home/berk/script.sh"
+#     }
 
-    provisioner "remote-exec" {
-      inline = [
-        "chmod +x /home/berk/script.sh",
-        "/home/berk/script.sh ${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,0)} ${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,1)} ${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
-      ]
-    }
-}
+#     provisioner "remote-exec" {
+#       inline = [
+#         "chmod +x /home/berk/script.sh",
+#         "/home/berk/script.sh ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,0)} ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,1)} ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
+#       ]
+#     }
+# }
 output "public_ip_addresses" {
-  value = "${join("-", data.azurerm_public_ip.ipforbackendvm.*.ip_address)}"
+  value = "${join("-", azurerm_public_ip.ipforbackendvm.*.ip_address)}"
 }
