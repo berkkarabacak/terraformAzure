@@ -81,28 +81,28 @@ resource "azurerm_managed_disk" "test" {
  disk_size_gb         = "1023"
 }
 
-resource "azurerm_availability_set" "avset" {
- name                         = "${var.prefix}_avset"
- location                     = "${azurerm_resource_group.test.location}"
- resource_group_name          = "${azurerm_resource_group.test.name}"
- platform_fault_domain_count  = 2
- platform_update_domain_count = 2
- managed                      = true
-}
+# resource "azurerm_availability_set" "avset" {
+#  name                         = "${var.prefix}_avset"
+#  location                     = "${azurerm_resource_group.test.location}"
+#  resource_group_name          = "${azurerm_resource_group.test.name}"
+#  platform_fault_domain_count  = 2
+#  platform_update_domain_count = 2
+#  managed                      = true
+# }
 
 resource "azurerm_virtual_machine" "test" {
  count                 = "${var.redundancy_count}"
  name                  = "berkkaravm${count.index}"
  location              = "${azurerm_resource_group.test.location}"
- availability_set_id   = "${azurerm_availability_set.avset.id}"
+#  availability_set_id   = "${azurerm_availability_set.avset.id}"
  resource_group_name   = "${azurerm_resource_group.test.name}"
  network_interface_ids = ["${element(azurerm_network_interface.test.*.id, count.index)}"]
  vm_size               = "Standard_DS1_v2"
 
- # Uncomment this line to delete the OS disk automatically when deleting the VM
+ # Purpose of this line is to delete the OS disk automatically when deleting the VM
  delete_os_disk_on_termination = true
 
- # Uncomment this line to delete the data disks automatically when deleting the VM
+ # Purpose of this line is to delete the data disks automatically when deleting the VM
  delete_data_disks_on_termination = true
 
  storage_image_reference {
@@ -174,7 +174,13 @@ resource "null_resource" "vm0" {
 
   provisioner "remote-exec" {
     inline = [
-      "whoami >> berko0000000.txt",
+      "whoami >> berk00.txt",
+      "git clone https://github.com/berkkarabacak/microservicedemo.git",
+      "cd microservicedemo",
+      "sudo apt-get install leiningen -y",
+      "sudo apt-get install build-essential -y",
+      "make libs",
+      "make clean all",
       "sudo apt-get update",
       "sudo apt-get install docker.io -y",
       "sudo docker run -d --rm --name web-test -p 80:8000 crccheck/hello-world"
@@ -199,14 +205,19 @@ resource "null_resource" "vm1" {
 
   provisioner "remote-exec" {
     inline = [
-      "whoami >> berko111111111.txt",
+      "whoami >> berko111.txt",
+      "git clone https://github.com/berkkarabacak/microservicedemo.git",
+      "cd microservicedemo",
+      "sudo apt-get install leiningen -y",
+      "sudo apt-get install build-essential -y",
+      "make libs",
+      "make clean all",
       "sudo apt-get update",
       "sudo apt-get install docker.io -y",
       "sudo docker run -d --rm --name web-test -p 80:8000 crccheck/hello-world"
     ]
   }
 }
-
 
 output "public_ip_address0" {
   value = "${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,0)}"
