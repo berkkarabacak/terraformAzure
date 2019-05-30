@@ -219,11 +219,6 @@ resource "null_resource" "vm1" {
   }
 }
 
-output "public_ip_address0" {
-  value = "${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,0)}"
-}
-
-output "public_ip_address1" {
-  value = "${element(data.azurerm_public_ip.ipforbackendvm.*.ip_address,1)}"
-
+output "public_ip_addresses" {
+  value = "${join("-", data.azurerm_public_ip.ipforbackendvm.*.ip_address)}"
 }
