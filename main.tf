@@ -211,7 +211,7 @@ resource "null_resource" "assets" {
 }
 
 resource "null_resource" "quote" {
-    depends_on = ["azurerm_virtual_machine.test" , "null_resource.frontend" ]
+    depends_on = ["azurerm_virtual_machine.test" ]
 
   # Changes to any instance of the vms requires re-provisioning
   triggers = {
@@ -239,7 +239,7 @@ resource "null_resource" "quote" {
 
 
 resource "null_resource" "Newsfeed" {
-    depends_on = ["azurerm_virtual_machine.test" , "null_resource.frontend"]
+    depends_on = ["azurerm_virtual_machine.test"]
 
   # Changes to any instance of the vms requires re-provisioning
   triggers = {
