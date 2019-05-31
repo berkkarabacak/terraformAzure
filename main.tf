@@ -157,144 +157,113 @@ resource "azurerm_virtual_machine" "test" {
       password = "${var.admin_password}"
       }
 
-    provisioner "file" {
-      #file ekleyince patlıo.
-        source      = "assets_script.sh"
-        destination = "/home/berk/script.sh"
+}
+
+resource "null_resource" "assets" {
+  
+  depends_on = ["azurerm_virtual_machine.test"  ]
+
+  # Changes to any instance of the vms requires re-provisioning
+  triggers = {
+    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,0)}"
+  }
+
+  # Bootstrap script can run on any instance of the cluster
+  # So we just choose the first in this case
+  connection {
+      type     = "ssh"
+      host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,0)}"
+      user     = "${var.admin_username}"
+      password = "${var.admin_password}"
       }
 
       provisioner "remote-exec" {
         inline = [
-          "chmod +x /home/berk/script.sh",
-          "/home/berk/script.sh"
+          "git clone https://github.com/berkkarabacak/microservicedemo.git",
+          "cd microservicedemo",
+          "./assets_script.sh"
         ]
       }
-
 }
 
-# resource "null_resource" "assets" {
-  
-#   depends_on = ["azurerm_virtual_machine.test"  ]
+resource "null_resource" "quote" {
+    depends_on = ["azurerm_virtual_machine.test"  ]
 
-#   # Changes to any instance of the vms requires re-provisioning
-#   triggers = {
-#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,0)}"
-#   }
+  # Changes to any instance of the vms requires re-provisioning
+  triggers = {
+    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,1)}"
+  }
 
-#   # Bootstrap script can run on any instance of the cluster
-#   # So we just choose the first in this case
-#   connection {
-#       type     = "ssh"
-#       host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,0)}"
-#       user     = "${var.admin_username}"
-#       password = "${var.admin_password}"
-#       }
+  # Bootstrap script can run on any instance of the cluster
+  # So we just choose the first in this case
+  connection {
+      type     = "ssh"
+      host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,1)}"
+      user     = "${var.admin_username}"
+      password = "${var.admin_password}"
+      }
 
-#     provisioner "file" {
-#         source      = "assets_script.sh"
-#         destination = "/home/berk/script.sh"
-#       }
-
-#       provisioner "remote-exec" {
-#         inline = [
-#           "chmod +x /home/berk/script.sh",
-#           "/home/berk/script.sh"
-#         ]
-#       }
-# }
-
-# resource "null_resource" "quote" {
-#     depends_on = ["azurerm_virtual_machine.test"  ]
-
-#   # Changes to any instance of the vms requires re-provisioning
-#   triggers = {
-#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,1)}"
-#   }
-
-#   # Bootstrap script can run on any instance of the cluster
-#   # So we just choose the first in this case
-#   connection {
-#       type     = "ssh"
-#       host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,1)}"
-#       user     = "${var.admin_username}"
-#       password = "${var.admin_password}"
-#       }
-
-#     provisioner "file" {
-#       source      = "quotescript.sh"
-#       destination = "/home/berk/script.sh"
-#     }
-
-#     provisioner "remote-exec" {
-#       inline = [
-#         "chmod +x /home/berk/script.sh",
-#         "/home/berk/script.sh"
-#       ]
-#     }
-# }
+         provisioner "remote-exec" {
+        inline = [
+          "git clone https://github.com/berkkarabacak/microservicedemo.git",
+          "cd microservicedemo",
+          "./quotescript.sh"
+        ]
+      }
+}
 
 
-# resource "null_resource" "Newsfeed" {
-#     depends_on = ["azurerm_virtual_machine.test"  ]
+resource "null_resource" "Newsfeed" {
+    depends_on = ["azurerm_virtual_machine.test"  ]
 
-#   # Changes to any instance of the vms requires re-provisioning
-#   triggers = {
-#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,2)}"
-#   }
+  # Changes to any instance of the vms requires re-provisioning
+  triggers = {
+    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,2)}"
+  }
 
-#   # Bootstrap script can run on any instance of the cluster
-#   # So we just choose the first in this case
-#   connection {
-#       type     = "ssh"
-#       host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
-#       user     = "${var.admin_username}"
-#       password = "${var.admin_password}"
-#       }
+  # Bootstrap script can run on any instance of the cluster
+  # So we just choose the first in this case
+  connection {
+      type     = "ssh"
+      host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
+      user     = "${var.admin_username}"
+      password = "${var.admin_password}"
+      }
 
-  
-#     provisioner "file" {
-#       source      = "newsfeed.sh"
-#       destination = "/home/berk/script.sh"
-#     }
-
-#     provisioner "remote-exec" {
-#       inline = [
-#         "chmod +x /home/berk/script.sh",
-#         "/home/berk/script.sh"
-#       ]
-#     }
-# }
+       provisioner "remote-exec" {
+        inline = [
+          "git clone https://github.com/berkkarabacak/microservicedemo.git",
+          "cd microservicedemo",
+          "./newsfeed.sh"
+        ]
+      }
+}
 
 
-# resource "null_resource" "frontend" {
-#     depends_on = ["azurerm_virtual_machine.test"  ]
+resource "null_resource" "frontend" {
+    depends_on = ["azurerm_virtual_machine.test"  ]
 
-#   # Changes to any instance of the vms requires re-provisioning
-#   triggers = {
-#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,3)}"
-#   }
+  # Changes to any instance of the vms requires re-provisioning
+  triggers = {
+    vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id,3)}"
+  }
 
-#   # Bootstrap script can run on any instance of the cluster
-#   # So we just choose the first in this case
-#   connection {
-#       type     = "ssh"
-#       host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,3)}"
-#       user     = "${var.admin_username}"
-#       password = "${var.admin_password}"
-#       }
-    
-#     provisioner "file" {
-#       source      = "frontendscript.sh"
-#       destination = "/home/berk/script.sh"
-#     }
-
-#     provisioner "remote-exec" {
-#       inline = [
-#         "chmod +x /home/berk/script.sh",
-#         "/home/berk/script.sh ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,0)} ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,1)} ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
-#       ]
-#     }
-# }
+  # Bootstrap script can run on any instance of the cluster
+  # So we just choose the first in this case
+  connection {
+      type     = "ssh"
+      host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address,3)}"
+      user     = "${var.admin_username}"
+      password = "${var.admin_password}"
+      }
+        provisioner "remote-exec" {
+      inline = [
+        "git clone https://github.com/berkkarabacak/microservicedemo.git",
+        "cd microservicedemo",
+        "./frontendscript.sh ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,0)} ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,1)} ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
+      ]
+    }
+}
 output "public_ip_addresses" {
   value = "${join("-", azurerm_public_ip.ipforbackendvm.*.ip_address)}"
 }
