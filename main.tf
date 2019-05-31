@@ -56,7 +56,7 @@ resource "azurerm_network_security_group" "test" {
 
   security_rule {
     name                       = "test123"
-    priority                   = 1
+    priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
