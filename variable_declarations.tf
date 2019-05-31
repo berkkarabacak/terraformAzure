@@ -8,7 +8,7 @@ variable "redundancy_count" {
 }
 
 variable "prefix" {
-  default = "berkuyurken"
+  default = "berk0955"
 }
 
 variable "admin_password" {
