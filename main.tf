@@ -49,11 +49,34 @@ resource "azurerm_public_ip" "ipforbackendvm" {
 #  name                = "BackEndAddressPool"
 # }
 
+resource "azurerm_network_security_group" "test" {
+  name                = "acceptanceTestSecurityGroup1"
+  location            = "${azurerm_resource_group.test.location}"
+  resource_group_name = "${azurerm_resource_group.test.name}"
+
+  security_rule {
+    name                       = "test123"
+    priority                   = 1
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "*"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  tags = {
+    environment = "Production"
+  }
+}
+
 resource "azurerm_network_interface" "test" {
  count               = "${var.redundancy_count}"
  name                = "${var.prefix}_ni${count.index}"
  location            = "${azurerm_resource_group.test.location}"
  resource_group_name = "${azurerm_resource_group.test.name}"
+ network_security_group_id = "${azurerm_network_security_group.test.id}"
 
  ip_configuration {
    name                          = "testConfiguration${count.index}"
@@ -161,7 +184,7 @@ resource "azurerm_virtual_machine" "test" {
 
 resource "null_resource" "assets" {
   
-  depends_on = ["azurerm_virtual_machine.test"  ]
+  depends_on = ["azurerm_virtual_machine.test"]
 
   # Changes to any instance of the vms requires re-provisioning
   triggers = {
@@ -188,7 +211,7 @@ resource "null_resource" "assets" {
 }
 
 resource "null_resource" "quote" {
-    depends_on = ["azurerm_virtual_machine.test"  ]
+    depends_on = ["azurerm_virtual_machine.test" , "null_resource.frontend" ]
 
   # Changes to any instance of the vms requires re-provisioning
   triggers = {
@@ -216,7 +239,7 @@ resource "null_resource" "quote" {
 
 
 resource "null_resource" "Newsfeed" {
-    depends_on = ["azurerm_virtual_machine.test"  ]
+    depends_on = ["azurerm_virtual_machine.test" , "null_resource.frontend"]
 
   # Changes to any instance of the vms requires re-provisioning
   triggers = {
