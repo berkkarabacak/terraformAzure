@@ -181,6 +181,7 @@ resource "null_resource" "assets" {
         inline = [
           "git clone https://github.com/berkkarabacak/microservicedemo.git",
           "cd microservicedemo",
+          "chmod a+x ./assets_script.sh",
           "./assets_script.sh"
         ]
       }
@@ -207,6 +208,7 @@ resource "null_resource" "quote" {
         inline = [
           "git clone https://github.com/berkkarabacak/microservicedemo.git",
           "cd microservicedemo",
+          "chmod a+x ./quotescript.sh",
           "./quotescript.sh"
         ]
       }
@@ -234,6 +236,7 @@ resource "null_resource" "Newsfeed" {
         inline = [
           "git clone https://github.com/berkkarabacak/microservicedemo.git",
           "cd microservicedemo",
+          "chmod a+x ./newsfeed.sh",
           "./newsfeed.sh"
         ]
       }
@@ -260,6 +263,7 @@ resource "null_resource" "frontend" {
       inline = [
         "git clone https://github.com/berkkarabacak/microservicedemo.git",
         "cd microservicedemo",
+        "chmod a+x ./frontendscript.sh",
         "./frontendscript.sh ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,0)} ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,1)} ${element(azurerm_public_ip.ipforbackendvm.*.ip_address,2)}"
       ]
     }
