@@ -1,0 +1,5 @@
+export APP_PORT="1113"
+export STATIC_URL="http://10.0.2.20:8000"
+export QUOTE_SERVICE_URL="http://10.0.2.21:8080"
+export NEWSFEED_SERVICE_URL="http://10.0.2.22:8080"
+export NEWSFEED_SERVICE_TOKEN='T1&eWbYXNWG1w1^YGKDPxAWJ@^et^&kX'
