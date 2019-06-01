@@ -70,7 +70,7 @@ resource "azurerm_network_interface" "test" {
     name                          = "testConfiguration${count.index}"
     subnet_id                     = "${azurerm_subnet.test.id}"
     private_ip_address_allocation = "static"
-    private_ip_address            = "10.0.2.${count.index + 20}"
+    private_ip_address            = "10.0.2.${count.index + 10}"
     public_ip_address_id          = "${element(azurerm_public_ip.ipforbackendvm.*.id, count.index)}"
   }
 }
@@ -121,16 +121,17 @@ resource "azurerm_virtual_machine" "test" {
 
 data "template_file" "init" {
   template = "${file("init.tpl")}"
-  # vars = {
-  #   cluster_size                = "${var.cluster_size}"
-  #   consul_version              = "${var.consul_version}"
-  #   consul_datacenter           = "${var.consul_datacenter}"
-  #   consul_join_wan             = "${join(" ", var.consul_join_wan)}"
-  #   auto_join_subscription_id   = "${var.auto_join_subscription_id}"
-  #   auto_join_tenant_id         = "${var.auto_join_tenant_id}"
-  #   auto_join_client_id         = "${var.auto_join_client_id}"
-  #   auto_join_secret_access_key = "${var.auto_join_client_secret}"
-  # }
+  vars = {
+    QuoteServicePrivateIP    = "${element(azurerm_network_interface.test.*.private_ip_address, 0)}"
+    NewsfeedServicePrivateIP = "${element(azurerm_network_interface.test.*.private_ip_address, 1)}"
+    FrontEndServicePrivateIP = "${element(azurerm_network_interface.test.*.private_ip_address, 2)}"
+    FrontEndServicePublicIP = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address, 2)}"
+    QuoteServicePort    = "8080"
+    NewsfeedServicePort = "8080"
+    FrontEndServicePort = "8090"
+    Username = "${var.admin_username}"
+
+  }
 }
 # resource "null_resource" "assets" {
 #   depends_on = ["azurerm_virtual_machine.test"]
