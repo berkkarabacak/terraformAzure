@@ -1,3 +1,9 @@
+resource "random_string" "fqdn" {
+ length  = 6
+ special = false
+ upper   = false
+ number  = false
+}
 resource "azurerm_resource_group" "test" {
   name     = "${var.prefix}_estrg"
   location = "West US 2"
@@ -18,11 +24,11 @@ resource "azurerm_subnet" "test" {
 }
 
 resource "azurerm_public_ip" "ipforbackendvm" {
-  count               = "${var.redundancy_count}"
-  name                = "ipforbackendvm_${count.index}"
+  name                = "ipforbackendvm"
   location            = "${azurerm_resource_group.test.location}"
   resource_group_name = "${azurerm_resource_group.test.name}"
   allocation_method   = "Static"
+  domain_name_label   = "${random_string.fqdn.result}"
 }
 
 
@@ -71,10 +77,9 @@ resource "azurerm_network_interface" "test" {
     subnet_id                     = "${azurerm_subnet.test.id}"
     private_ip_address_allocation = "static"
     private_ip_address            = "10.0.2.${count.index + 10}"
-    public_ip_address_id          = "${element(azurerm_public_ip.ipforbackendvm.*.id, count.index)}"
+    public_ip_address_id          = "${ count.index > 1 ? azurerm_public_ip.ipforbackendvm.id : "" }"
   }
 }
-
 resource "azurerm_virtual_machine" "test" {
   count                 = "${var.redundancy_count}"
   name                  = "${var.prefix}vm${count.index}"
@@ -122,124 +127,16 @@ resource "azurerm_virtual_machine" "test" {
 data "template_file" "init" {
   template = "${file("init.tpl")}"
   vars = {
-    QuoteServicePrivateIP    = "${element(azurerm_network_interface.test.*.private_ip_address, 0)}"
-    NewsfeedServicePrivateIP = "${element(azurerm_network_interface.test.*.private_ip_address, 1)}"
-    FrontEndServicePrivateIP = "${element(azurerm_network_interface.test.*.private_ip_address, 2)}"
-    FrontEndServicePublicIP = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address, 2)}"
-    QuoteServicePort    = "8080"
-    NewsfeedServicePort = "8080"
-    FrontEndServicePort = "8090"
-    Username = "${var.admin_username}"
-
+    QuoteServicePrivateIP     = "${element(azurerm_network_interface.test.*.private_ip_address, 0)}"
+    NewsfeedServicePrivateIP  = "${element(azurerm_network_interface.test.*.private_ip_address, 1)}"
+    FrontEndServicePrivateIP  = "${element(azurerm_network_interface.test.*.private_ip_address, 2)}"
+    FrontEndServicePublicIP   = "${azurerm_public_ip.ipforbackendvm.ip_address}"
+    QuoteServicePort          = "${var.QuoteServicePort}"
+    NewsfeedServicePort       = "${var.NewsfeedServicePort}"
+    FrontEndServicePort       = "${var.FrontEndServicePort}"
+    Username                  = "${var.admin_username}"
   }
 }
-# resource "null_resource" "assets" {
-#   depends_on = ["azurerm_virtual_machine.test"]
-#   # Changes to any instance of the vms requires re-provisioning
-#   triggers = {
-#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id, 0)}"
-#   }
-
-#   connection {
-#     type     = "ssh"
-#     host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address, 0)}"
-#     user     = "${var.admin_username}"
-#     password = "${var.admin_password}"
-#   }
-
-#   provisioner "remote-exec" {
-#     inline = [
-#       "sudo systemctl enable Assets",
-#       "sudo systemctl start Assets"
-#     ]
-#   }
-# }
-
-# resource "null_resource" "quote" {
-#   depends_on = ["azurerm_virtual_machine.test"]
-
-#   triggers = {
-#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id, 1)}"
-#   }
-
-#   connection {
-#     type     = "ssh"
-#     host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address, 1)}"
-#     user     = "${var.admin_username}"
-#     password = "${var.admin_password}"
-#   }
-
-#   provisioner "file" {
-#     source      = "scriptquote.sh"
-#     destination = "/tmp/scriptquote.sh"
-#   }
-
-#   provisioner "remote-exec" {
-#       inline = [
-#       "chmod +x /tmp/scriptquote.sh",
-#       "source /tmp/scriptquote.sh",
-#       "sudo systemctl enable Quote",
-#       "sudo systemctl start Quote"
-#     ]
-#   }
-# }
-
-# resource "null_resource" "Newsfeed" {
-#   depends_on = ["azurerm_virtual_machine.test"]
-
-#   triggers = {
-#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id, 2)}"
-#   }
-#   connection {
-#     type     = "ssh"
-#     host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address, 2)}"
-#     user     = "${var.admin_username}"
-#     password = "${var.admin_password}"
-#   }
- 
-#   provisioner "file" {
-#     source      = "scriptnewsfeed.sh"
-#     destination = "/tmp/scriptnewsfeed.sh"
-#   }
-
-#   provisioner "remote-exec" {
-#       inline = [
-#       "chmod +x /tmp/scriptnewsfeed.sh",
-#       "source /tmp/scriptnewsfeed.sh",
-#       "sudo systemctl enable Newsfeed",
-#       "sudo systemctl start Newsfeed"
-#     ]
-#   }
-# }
-
-# resource "null_resource" "frontend" {
-#   depends_on = ["azurerm_virtual_machine.test"]
-
-#   triggers = {
-#     vm_instance_ids = "${element(azurerm_virtual_machine.test.*.id, 3)}"
-#   }
-
-#   connection {
-#     type     = "ssh"
-#     host     = "${element(azurerm_public_ip.ipforbackendvm.*.ip_address, 3)}"
-#     user     = "${var.admin_username}"
-#     password = "${var.admin_password}"
-#   }
-
-#   provisioner "file" {
-#     source      = "scriptfrontend.sh"
-#     destination = "/tmp/scriptfrontend.sh"
-#   }
-
-#   provisioner "remote-exec" {
-#       inline = [
-#       "chmod +x /tmp/scriptfrontend.sh",
-#       "source /tmp/scriptfrontend.sh",
-#       "sudo systemctl enable FrontEnd",
-#       "sudo systemctl start FrontEnd"
-#     ]
-#   }
-# }
-output "public_ip_addresses" {
-  value = "${join("-", azurerm_public_ip.ipforbackendvm.*.ip_address)}"
-}
+output "public_address_frontend" {
+     value = "${azurerm_public_ip.ipforbackendvm.fqdn}:${var.FrontEndServicePort}"
+ }

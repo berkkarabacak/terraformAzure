@@ -12,7 +12,16 @@ variable "prefix" {
 }
 
 variable "admin_password" {
-  default = "Berk123123123"
+  default = "Berk123123"
+}
+variable "QuoteServicePort" {
+  default = "8080"
+}
+variable "NewsfeedServicePort" {
+  default = "8080"
+}
+variable "FrontEndServicePort" {
+  default = "8080"
 }
 
 provider "azurerm" {
